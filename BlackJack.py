@@ -69,6 +69,10 @@ class Player(Hand):
     def __str__(self):
         return f'{self.name}, {self.money}'
 
+    def bet(self, amount):
+        player.money -= amount
+
+
 class DealerHand(Hand):
     def __init__(self):
         super().__init__()
@@ -120,18 +124,6 @@ def game_end(): # refactor name
         print(player)
         return False
 
-def bet(amount):
-    while True:
-        try:
-            if amount <= player.money and amount != 0:
-                player.money -= amount
-                return amount
-                break
-            else:
-                print("You can't do that!")
-        except TypeError:
-            print("wtf?")
-
 name = input("What's your name punk? ")
 while True:
     try:
@@ -156,7 +148,16 @@ deck.shuffle()
 play = 'y'
 while player.money > 0:
     if play == 'y':
-        amount = bet(validate(input("How much you want to lose?: ")))
+        while True:
+            try:
+                amount = validate(input("How much you want to lose?: "))
+                if amount >= player.money or amount < 0:
+                    print("Don't you play with me, fool!")
+                else:
+                    player.bet(amount)
+                    break
+            except TypeError:
+                print("wtf?")
         first_draw()
         show_table()
         while game_end():
