@@ -69,13 +69,6 @@ class Player(Hand):
     def __str__(self):
         return f'{self.name}, {self.money}'
 
-    def bet(self):
-        self.bet = validate(input("How much you want to lose?: "))
-        if validate(self.bet) <= self.money and validate(self.bet) != 0:
-            self.money -= validate(self.bet)
-        else:
-            print("You can't do that!")
-
 class DealerHand(Hand):
     def __init__(self):
         super().__init__()
@@ -112,22 +105,32 @@ def first_draw():
 
 def game_ongoing(): # refactor name
     if player.get_value() <= dealer.get_value() and dealer.get_value() <= 21:
-
         print("You've lost!!!")
         print(player)
     else:
-        player.money += player.bet*2
-
+        player.money += amount*2
         print("You lucky bastard!!!")
         print(player)
 
 def game_end(): # refactor name
-    if player.get_value() < 21:
+    if player.get_value() <= 21:
         return True
     else:
         print("You've lost!!!")
         print(player)
         return False
+
+def bet(amount):
+    while True:
+        try:
+            if amount <= player.money and amount != 0:
+                player.money -= amount
+                return amount
+                break
+            else:
+                print("You can't do that!")
+        except TypeError:
+            print("wtf?")
 
 name = input("What's your name punk? ")
 while True:
@@ -148,29 +151,38 @@ player = Player(name, money)
 deck = Deck()
 dealer = DealerHand()
 deck.shuffle()
-play = 'y'
-while play == 'y' and player.money > 0:
-    player.bet()
-    first_draw()
-    show_table()
-    while game_end():
-        choice = input("You hit or stay?: [h/s] ")
-        if choice == 'h':
-            player.hit(deck)
-            player.show()
-        elif choice == 's':
-            player.show()
-            break
 
-    while player.get_value() <= 21:
-        if player.get_value() > dealer.get_value() and dealer.get_value() <= 21:
-            dealer.hit(deck)
-            dealer.show()
-        else:
-            game_ongoing()
-            break
-    player.cards = []
-    dealer.cards = []
-    play = input("Ready for another game?: [y/n] ")
+
+play = 'y'
+while player.money > 0:
+    if play == 'y':
+        amount = bet(validate(input("How much you want to lose?: ")))
+        first_draw()
+        show_table()
+        while game_end():
+            choice = input("You hit or stay?: [h/s] ")
+            if choice == 'h':
+                player.hit(deck)
+                player.show()
+            elif choice == 's':
+                player.show()
+                break
+            else:
+                choice = input("You hit or stay?: [h/s] ")
+
+        while player.get_value() <= 21:
+            if player.get_value() > dealer.get_value() and dealer.get_value() <= 21:
+                dealer.hit(deck)
+                dealer.show()
+            else:
+                game_ongoing()
+                break
+        player.cards = []
+        dealer.cards = []
+        play = input("Ready for another game?: [y/n] ")
+    elif play == 'n':
+        break
+    else:
+        play = input("Ready for another game?: [y/n] ")
 else:
     print("Get lost punk!")
